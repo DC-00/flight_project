@@ -7,6 +7,9 @@ const {
   getPublicGroups,
   createEvent,
   getAllEvents,
+  getPublicEvents,
+  createTodo,
+  getTodos,
 } = require("./index");
 
 async function buildTables() {
@@ -14,10 +17,12 @@ async function buildTables() {
     client.connect();
 
     await client.query(
-      ` DROP TABLE IF EXISTS events;
-        DROP TABLE IF EXISTS groups;
-        DROP TABLE IF EXISTS users;
-        `
+      ` 
+      DROP TABLE IF EXISTS todos;
+      DROP TABLE IF EXISTS events;
+      DROP TABLE IF EXISTS groups;
+      DROP TABLE IF EXISTS users;
+      `
     );
     await client.query(
       `
@@ -47,7 +52,11 @@ async function buildTables() {
           public BOOLEAN DEFAULT true,
           creatorId INTEGER REFERENCES users(id)
         );
-      
+        CREATE TABLE todos (
+          eventId INTEGER REFERENCES events(id),
+          entries TEXT []
+        )
+
       `
     );
   } catch (error) {
@@ -143,8 +152,54 @@ async function initialData() {
       creatorId: 2,
     });
 
+    await createEvent({
+      name: "2020 Abstract Art Gallery",
+      start_time: "2020-12-20:11:00",
+      end_time: "2020-12-20:16:00",
+      location: "Narnia Ave",
+      details: "placeholderfornow",
+      attending: 35,
+      maybe: 12,
+      public: true,
+      creatorId: 4,
+    });
+
+    await createEvent({
+      name: "Tommy B-Day Party 01/15/21!",
+      start_time: "2021-01-15:12:00",
+      end_time: "2021-01-15:16:00",
+      location: "8743 Mountain Drive",
+      details: "My cousin Tommy's 21st birthday party",
+      attending: 8,
+      maybe: 6,
+      public: false,
+      creatorId: 5,
+    });
+
     const events = await getAllEvents();
-    console.log("---GROUPS:", events);
+    console.log("---EVENTS:", events);
+
+    const pubevents = await getPublicEvents();
+    console.log("---PUBLIC EVENTS:", pubevents);
+    /*--------------------------TODOS----------------------------*/
+
+    await createTodo({
+      eventId: 1,
+      entries: ["todo1", "todo2", "todo3", "todo4"],
+    });
+
+    await createTodo({
+      eventId: 2,
+      entries: [
+        "Buy decorations",
+        "Get food and drinks",
+        "Buy cleaning supplies",
+        "Rent tables and chairs",
+      ],
+    });
+
+    const todos = await getTodos(1);
+    console.log("---todo:", todos);
   } catch (error) {
     throw error;
   }

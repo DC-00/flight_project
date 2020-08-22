@@ -13,6 +13,7 @@ const {
   createUser,
   getUserByUsername,
   getUserById,
+  deleteUser,
 } = require("../database");
 
 usersRouter.get("/", async (req, res) => {
@@ -27,7 +28,7 @@ usersRouter.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    next({
+    res.send({
       name: "MissingCredentialsError",
       message: "Please supply both a username and password",
     });
@@ -44,13 +45,13 @@ usersRouter.post("/login", async (req, res, next) => {
         },
         process.env.JWT_SECRET,
         {
-          expiresIn: "1d",
+          expiresIn: "1w",
         }
       );
-      // let currentUser = {
-      //   username: `${username}`,
-      //   token: `${token}`,
-      // };
+      let currentUser = {
+        username: `${username}`,
+        token: `${token}`,
+      };
       // localStorage.setItem("currentUser", currentUser);
       // console.log("CURRENT USER:", currentUser);
       console.log(user.id);
@@ -69,6 +70,13 @@ usersRouter.post("/login", async (req, res, next) => {
 
 usersRouter.post("/register", async (req, res, next) => {
   const { username, password, name, email, location } = req.body;
+
+  if (!username || !password || !name || !email || !location) {
+    return res.send({
+      name: "MissingCredentialsError",
+      message: "Fill all fields",
+    });
+  }
 
   try {
     const _user = await getUserByUsername(username);
@@ -107,16 +115,16 @@ usersRouter.post("/register", async (req, res, next) => {
   }
 });
 
-// usersRouter.delete("/:userId", async (req, res, next) => {
-//   try {
-//     const user = await getUserById(req.params.userId);
+usersRouter.delete("/:userId", async (req, res, next) => {
+  try {
+    const user = await getUserById(req.params.userId);
 
-//     const deleted = await deleteUser(user.id);
+    const deleted = await deleteUser(user.id);
 
-//     res.send({ user: deleted });
-//     next();
-//   } catch ({ name, message }) {
-//     next({ name, message });
-//   }
-// });
+    res.send({ user: deleted });
+    next();
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
+});
 module.exports = usersRouter;

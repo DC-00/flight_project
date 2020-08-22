@@ -44,4 +44,11 @@ apiRouter.use("/users", usersRouter);
 const groupsRouter = require("./groups");
 apiRouter.use("/groups", groupsRouter);
 
+const eventsRouter = require("./events");
+apiRouter.use("/events", eventsRouter);
+
+apiRouter.use((error, req, res, next) => {
+  res.send(error);
+});
+
 module.exports = apiRouter;

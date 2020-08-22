@@ -1,6 +1,6 @@
 const express = require("express");
 const groupsRouter = express.Router();
-const { getAllGroups } = require("../database");
+const { getAllGroups, getPublicGroups } = require("../database");
 
 groupsRouter.use((req, res, next) => {
   next();
@@ -17,8 +17,8 @@ groupsRouter.get("/", async (req, res) => {
   }
 });
 
-groupsRouter.get("/", async (req, res) => {
-  const groups = await getAllGroups();
+groupsRouter.get("/public", async (req, res) => {
+  const groups = await getPublicGroups();
 
   res.send({
     groups,

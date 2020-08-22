@@ -20,6 +20,15 @@ async function createUser({ username, password, name, email, location }) {
   }
 }
 
+async function deleteUser(userId) {
+  await client.query(
+    `
+      DELETE FROM users
+      WHERE id=${userId}
+      RETURNING *`
+  );
+}
+
 async function getAllUsers() {
   try {
     const { rows } = await client.query(`
@@ -80,6 +89,36 @@ async function createGroup({ name, public, creatorId }) {
         `,
       [name, public, creatorId]
     );
+
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function createTodo({ eventId, entries }) {
+  try {
+    const { rows } = await client.query(
+      `
+          INSERT INTO todos(eventId, entries)
+          VALUES($1, $2)
+          RETURNING *;
+        `,
+      [eventId, entries]
+    );
+
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getTodos(eventId) {
+  try {
+    const { rows } = await client.query(`
+        SELECT entries FROM todos
+        WHERE eventId=${eventId};
+      `);
 
     return rows;
   } catch (error) {
@@ -161,6 +200,38 @@ async function getAllEvents() {
   }
 }
 
+async function getEventById(eventId) {
+  try {
+    const {
+      rows: [user],
+    } = await client.query(`
+        SELECT *
+        FROM events
+        WHERE id=${eventId}
+      `);
+
+    if (!user) {
+      return null;
+    }
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getPublicEvents() {
+  try {
+    const { rows } = await client.query(`
+            SELECT * FROM events
+            WHERE public = true;
+          `);
+
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   client,
   createUser,
@@ -172,4 +243,9 @@ module.exports = {
   getPublicGroups,
   createEvent,
   getAllEvents,
+  getEventById,
+  getPublicEvents,
+  createTodo,
+  getTodos,
+  deleteUser,
 };
